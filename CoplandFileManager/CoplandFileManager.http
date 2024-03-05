@@ -1,0 +1,6 @@
+@CoplandFileManager_HostAddress = http://localhost:5131
+
+GET {{CoplandFileManager_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
