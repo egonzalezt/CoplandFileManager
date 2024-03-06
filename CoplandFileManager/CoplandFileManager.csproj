@@ -13,6 +13,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoplandFileManager.Application\CoplandFileManager.Application.csproj" />
+    <ProjectReference Include="..\CoplandFileManager.Domain\CoplandFileManager.Domain.csproj" />
+    <ProjectReference Include="..\CoplandFileManager.Infrastructure\CoplandFileManager.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
