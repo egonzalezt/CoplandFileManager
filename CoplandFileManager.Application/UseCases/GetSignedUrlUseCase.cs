@@ -12,4 +12,9 @@ public class GetSignedUrlUseCase(
     {
         return await storageServiceProvider.GeneratePreSignedUrlAsync(objectId, TimeSpan.FromHours(32));
     }
+
+    public async Task<string> GetSignedUrlForUploadUseCaseAsync(string identityProviderId, string objectId)
+    {
+        return await storageServiceProvider.GeneratePreSignedUrlForUploadAsync(objectId, identityProviderId, TimeSpan.FromHours(1));
+    }
 }

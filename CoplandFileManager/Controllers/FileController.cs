@@ -42,4 +42,11 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
         var url = await getSignedUrlUseCase.GetSignedUrlUseCaseAsync(userId, objectId); 
         return Ok(url);
     }
+
+    [HttpPut()]
+    public async Task<IActionResult> GetPreSignedForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromQuery] string objectId)
+    {
+        var url = await getSignedUrlUseCase.GetSignedUrlForUploadUseCaseAsync(userId, objectId); 
+        return Ok(url);
+    }
 }
