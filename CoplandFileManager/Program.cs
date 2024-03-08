@@ -1,4 +1,5 @@
 using CoplandFileManager.Extensions;
+using CoplandFileManager.Infrastructure.EntityFrameworkCore.DbContext;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,5 +24,13 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CoplandFileManagerDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    dbContext.Database.EnsureCreated();
+    logger.LogInformation("Database created successfully or already exists.");
+}
 
 app.Run();
