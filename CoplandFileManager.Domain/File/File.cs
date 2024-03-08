@@ -1,28 +1,35 @@
-﻿namespace CoplandFileManager.Domain.File;
+﻿using System.Xml.Linq;
+
+namespace CoplandFileManager.Domain.File;
 
 public class File
 {
-    private File(Guid userId, string name, string format, string objectId, string objectRoute)
+    private File(Category category, string name, string format, string objectRoute)
     {
         Name = name;
         Format = format;
-        ObjectId = objectId;
         Id = Guid.NewGuid();
-        UserId = userId;
         ObjectRoute = objectRoute;
+        Category = category;
     }
     public Guid Id { get; private set; }
-    public Guid UserId { get; private set; }
     public string Name { get; private set; }
     public string Format { get; private set; }
-    public string ObjectId { get; private set; }
     public string ObjectRoute { get; private set; }
+    public Category Category { get; private set; }
     public DateTime UploadTime { get; } = DateTime.UtcNow;
+    public ICollection<UserFilePermission> UserPermissions { get; private set; }
 
-    public static File Build(Guid userId, string name, string format, string objectId, string objectRoute)
+    public static File Build(Category category, string nameWithExtension, Guid userId)
     {
-        var nameWithoutExtension = Path.GetFileNameWithoutExtension(name);
-        return new(userId, nameWithoutExtension, format, objectId, objectRoute);
+        var nameWithoutExtension = Path.GetFileNameWithoutExtension(nameWithExtension); 
+        var extension = Path.GetExtension(nameWithExtension);
+        var objectRoute = $"{userId}/{nameWithExtension}";
+        return new(category, nameWithoutExtension, extension, objectRoute);
     }
 
+    public static string GenerateObjectRoute(string nameWithExtension,  Guid userId)
+    {
+        return $"{userId}/{nameWithExtension}";
+    }
 }

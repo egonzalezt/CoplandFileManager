@@ -14,23 +14,39 @@ public class CreateFileUseCase(
         IFileQueryRepository fileQueryRepository,
         ILogger<CreateFileUseCase> logger,
         IStorageServiceProvider storageServiceProvider
-    ) : ICreateFileUseCase
+) : ICreateFileUseCase
 {
 
-    public async Task TryCreateAsync(Stream stream, FileDto fileDto)
+    public async Task TryCreateAsync(Stream stream, FileDto fileDto, string identityProviderUserId)
     {
         logger.LogInformation("Saving File on the system");
-        Guid? userId = await userCommandRepository.GetIdByIdentityProviderId(fileDto.IdentityProviderUserId) ?? throw new UserNotFoundException(fileDto.IdentityProviderUserId);
-        bool isActive = await userCommandRepository.IsActive((Guid)userId);
+        Guid userId = await userCommandRepository.GetIdByIdentityProviderId(identityProviderUserId) ?? throw new UserNotFoundException(identityProviderUserId);
+        bool isActive = await userCommandRepository.IsActive(userId);
         if (!isActive)
         {
-            throw new UserNotActiveException(fileDto.IdentityProviderUserId);
+            throw new UserNotActiveException(identityProviderUserId);
         }
-        (var objectId, var objectRoute) = await storageServiceProvider.UploadFileAsync(stream, userId!.Value.ToString(), fileDto.Name, fileDto.MimeType);
-        fileDto.ObjectId = objectId;
-        fileDto.ObjectRoute = objectRoute;
-        var newFile = File.Build(userId.Value, fileDto.Name, fileDto.Format, fileDto.ObjectId, fileDto.ObjectRoute);
-        await fileQueryRepository.CreateAsync(newFile);
+        var objectRoute = File.GenerateObjectRoute(fileDto.NameWithExtension, userId);
+        await storageServiceProvider.UploadFileAsync(stream, objectRoute, fileDto.MimeType);
+        var newFile = File.Build(fileDto.category, fileDto.NameWithExtension, userId);
+        await fileQueryRepository.CreateAsync(newFile, userId);
         logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
+    }
+
+    public async Task<(string url, TimeSpan timeLimit)> TryCreateAsync(FileDto fileDto, string identityProviderUserId)
+    {
+        logger.LogInformation("Saving File on the system");
+        Guid userId = await userCommandRepository.GetIdByIdentityProviderId(identityProviderUserId) ?? throw new UserNotFoundException(identityProviderUserId);
+        bool isActive = await userCommandRepository.IsActive(userId);
+        if (!isActive)
+        {
+            throw new UserNotActiveException(identityProviderUserId);
+        }
+        var newFile = File.Build(fileDto.category, fileDto.NameWithExtension, userId);
+        await fileQueryRepository.CreateAsync(newFile, userId);
+        var timeLimit = TimeSpan.FromMinutes(15);
+        var url = await storageServiceProvider.GeneratePreSignedUrlForUploadAsync(fileDto.NameWithExtension, userId, timeLimit);
+        logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
+        return (url, timeLimit);
     }
 }

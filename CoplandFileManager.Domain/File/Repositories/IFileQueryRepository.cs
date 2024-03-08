@@ -2,5 +2,5 @@
 
 public interface IFileQueryRepository
 {
-    Task CreateAsync(File file);
+    Task CreateAsync(File file, Guid userId);
 }

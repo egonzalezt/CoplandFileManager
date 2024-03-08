@@ -3,6 +3,7 @@ using System;
 using CoplandFileManager.Infrastructure.EntityFrameworkCore.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoplandFileManager.Infrastructure.Migrations
 {
     [DbContext(typeof(CoplandFileManagerDbContext))]
-    partial class CoplandFileManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240308042313_CreateFilePermissions")]
+    partial class CreateFilePermissions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,6 +49,9 @@ namespace CoplandFileManager.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
@@ -54,7 +60,9 @@ namespace CoplandFileManager.Infrastructure.Migrations
                     b.HasIndex("ObjectRoute")
                         .IsUnique();
 
-                    b.ToTable("Files", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.File.UserFilePermission", b =>
@@ -72,7 +80,7 @@ namespace CoplandFileManager.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("UserFilePermissions", (string)null);
+                    b.ToTable("UserFilePermissions");
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.User.User", b =>
@@ -98,7 +106,16 @@ namespace CoplandFileManager.Infrastructure.Migrations
                     b.HasIndex("IdentityProviderUserId")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CoplandFileManager.Domain.File.File", b =>
+                {
+                    b.HasOne("CoplandFileManager.Domain.User.User", null)
+                        .WithMany("Files")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.File.UserFilePermission", b =>
@@ -127,6 +144,8 @@ namespace CoplandFileManager.Infrastructure.Migrations
 
             modelBuilder.Entity("CoplandFileManager.Domain.User.User", b =>
                 {
+                    b.Navigation("Files");
+
                     b.Navigation("UserPermissions");
                 });
 #pragma warning restore 612, 618

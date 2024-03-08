@@ -16,12 +16,13 @@ public class FileCommandRepository : IFileCommandRepository
 
     public async Task<List<File>> GetFilesByUserIdAsync(Guid userId, int pageIndex, int pageSize)
     {
-        return await _context.Files
-            .Where(f => f.UserId == userId)
-            .OrderByDescending(f => f.UploadTime)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        return await (from uf in _context.UserFilePermissions
+                      where uf.UserId == userId
+                      join f in _context.Files on uf.FileId equals f.Id
+                      select f)
+                      .Skip(pageIndex * pageSize)
+                      .Take(pageSize)
+                      .ToListAsync();
     }
 
     public async Task<File?> GetFileByNameAsync(string fileName)
@@ -31,6 +32,16 @@ public class FileCommandRepository : IFileCommandRepository
 
     public async Task<bool> FileExistsByNameAsync(Guid userId, string fileName)
     {
-        return await _context.Files.AnyAsync(f => f.Name == fileName && f.UserId == userId);
+        return await _context.UserFilePermissions.AnyAsync(uf =>
+            uf.UserId == userId &&
+            uf.File.Name == fileName);
+    }
+
+    public async Task<File?> GetFileByIdAndUserIdAsync(Guid fileId, Guid userId)
+    {
+        return await _context.Files
+            .Where(f => f.Id == fileId &&
+                        f.UserPermissions.Any(p => p.UserId == userId ))
+            .FirstOrDefaultAsync();
     }
 }

@@ -1,5 +1,6 @@
 using CoplandFileManager.Extensions;
 using CoplandFileManager.Infrastructure.EntityFrameworkCore.DbContext;
+using CoplandFileManager.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseMiddleware<GoogleCloudStorageExceptionHandlerMiddleware>();
 
 app.MapControllers();
 

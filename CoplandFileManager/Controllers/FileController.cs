@@ -1,10 +1,10 @@
 ﻿namespace CoplandFileManager.Controllers;
 
-using CoplandFileManager.Application.Interfaces;
+using Application.Interfaces;
+using CoplandFileManager.Responses;
 using Domain.File.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
 using System.Threading.Tasks;
 
 [ApiController]
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlUseCase getSignedUrlUseCase) : ControllerBase
 {
     [HttpPost("upload")]
-    public async Task<IActionResult> UploadFileAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, IFormFile file)
+    public async Task<ActionResult<BaseResponse<FileCreatedResponse>>> UploadFileAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, IFormFile file)
     {
         if (string.IsNullOrEmpty(userId))
         {
@@ -25,28 +25,48 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
 
         var fileDto = new FileDto
         {
-            Format = Path.GetExtension(file.FileName),
-            IdentityProviderUserId = userId,
-            Name = file.FileName,
+            NameWithExtension = file.FileName,
             MimeType = file.ContentType.ToLower(),
         };
+        await createFileUseCase.TryCreateAsync(file.OpenReadStream(), fileDto, userId);
 
-        await createFileUseCase.TryCreateAsync(file.OpenReadStream(), fileDto);
+        var fileCreatedResponse = new FileCreatedResponse
+        {
+            FileName = file.FileName
+        };
 
-        return Ok("File Uploaded");
+        var response = new BaseResponse<FileCreatedResponse>
+        {
+            Content = fileCreatedResponse,
+            Message = "Lain uploaded the file on the system"
+        };
+
+        return Ok(response);
     }
 
     [HttpGet("get-file-url")]
-    public async Task<IActionResult> GetPreSignedUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromQuery] string objectId)
+    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GetPreSignedUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromQuery] Guid fileId)
     {
-        var url = await getSignedUrlUseCase.GetSignedUrlUseCaseAsync(userId, objectId); 
-        return Ok(url);
+        (var url, var timeLimit) = await getSignedUrlUseCase.GetSignedUrlUseCaseAsync(userId, fileId);
+        var signedResponse = new SignedUrlResponse
+        {
+            TimeLimit = timeLimit,
+            Url = url
+        };
+        var baseResponse = new BaseResponse<SignedUrlResponse> { Content = signedResponse, Message = "Signed Url generated to get the file" };
+        return Ok(baseResponse);
     }
 
-    [HttpPut()]
-    public async Task<IActionResult> GetPreSignedForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromQuery] string objectId)
+    [HttpPost("upload-file-signed-url")]
+    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GeneratePreSignedUrlForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromBody] FileDto fileDto)
     {
-        var url = await getSignedUrlUseCase.GetSignedUrlForUploadUseCaseAsync(userId, objectId); 
-        return Ok(url);
+        (var url, var timeLimit) = await createFileUseCase.TryCreateAsync(fileDto, userId);
+        var signedResponse = new SignedUrlResponse
+        {
+            TimeLimit = timeLimit,
+            Url = url
+        };
+        var baseResponse = new BaseResponse<SignedUrlResponse> { Content = signedResponse, Message = "Signed Url generated to upload the file" };
+        return Ok(baseResponse);
     }
 }

@@ -12,8 +12,8 @@ public class User
 
     public Guid Id { get; private set; }
     public string IdentityProviderUserId { get; private set; }
-    public ICollection<File>? Files { get; private set; }
     public bool IsActive { get; private set; } = false;
+    public ICollection<UserFilePermission> UserPermissions { get; private set; }
 
     public void SetActive()
     {

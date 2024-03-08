@@ -15,8 +15,13 @@ public class UserCommandRepository : IUserCommandRepository
 
     public async Task<Guid?> GetIdByIdentityProviderId(string identityProviderId)
     {
-        return await _context.Users.Where(u => u.IdentityProviderUserId.Equals(identityProviderId))
+        var result = await _context.Users.Where(u => u.IdentityProviderUserId.Equals(identityProviderId))
             .Select(usr => usr.Id).SingleOrDefaultAsync();
+        if (result == Guid.Empty)
+        {
+            return null;
+        }
+        return result;
     }
 
     public async Task<bool> ExistsByIdAsync(Guid id)

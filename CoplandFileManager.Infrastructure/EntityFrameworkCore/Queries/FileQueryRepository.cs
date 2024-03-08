@@ -14,9 +14,16 @@ public class FileQueryRepository : IFileQueryRepository
         _context = context;
     }
 
-    public async Task CreateAsync(File file)
+    public async Task CreateAsync(File file, Guid userId)
     {
+        var userFilePermission = new UserFilePermission
+        {
+            UserId = userId,
+            FileId = file.Id,
+            Permission = Permission.Owner
+        };
         await _context.Files.AddAsync(file);
+        await _context.UserFilePermissions.AddAsync(userFilePermission);
         await _context.SaveChangesAsync();
     }
 }

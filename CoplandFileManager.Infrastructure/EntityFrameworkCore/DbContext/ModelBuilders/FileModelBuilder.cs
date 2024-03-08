@@ -13,13 +13,10 @@ internal static class FileModelBuilder
         builder.Property(p => p.Format)
             .IsRequired()
             .HasMaxLength(30);
-        builder.Property(p => p.ObjectId)
-            .IsRequired()
-            .HasMaxLength(256);
         builder.Property(p => p.ObjectRoute)
             .IsRequired()
             .HasMaxLength(256);
-        builder.HasIndex(p => p.ObjectId).IsUnique();
+        builder.HasIndex(p => p.ObjectRoute).IsUnique();
         builder.HasIndex(p => p.Id).IsUnique();
     }
 }
