@@ -2,5 +2,5 @@
 
 public interface IGetSignedUrlUseCase
 {
-    Task<(string url, TimeSpan timeLimit)> GetSignedUrlUseCaseAsync(string identityProviderUserId, Guid fileId);
+    Task<(string url, TimeSpan timeLimit)> GetSignedUrlUseCaseAsync(Guid userId, Guid fileId);
 }

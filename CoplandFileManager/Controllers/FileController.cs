@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlUseCase getSignedUrlUseCase) : ControllerBase
 {
     [HttpPost("upload")]
-    public async Task<ActionResult<BaseResponse<FileCreatedResponse>>> UploadFileAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, IFormFile file)
+    public async Task<ActionResult<BaseResponse<FileCreatedResponse>>> UploadFileAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, IFormFile file)
     {
-        if (string.IsNullOrEmpty(userId))
+        if (userId == Guid.Empty)
         {
             return BadRequest("User Id not found");
         }
@@ -45,8 +45,12 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
     }
 
     [HttpGet("get-file-url")]
-    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GetPreSignedUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromQuery] Guid fileId)
+    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GetPreSignedUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, [FromQuery] Guid fileId)
     {
+        if (userId == Guid.Empty)
+        {
+            return BadRequest("User Id not found");
+        }
         (var url, var timeLimit) = await getSignedUrlUseCase.GetSignedUrlUseCaseAsync(userId, fileId);
         var signedResponse = new SignedUrlResponse
         {
@@ -58,8 +62,12 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
     }
 
     [HttpPost("upload-file-signed-url")]
-    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GeneratePreSignedUrlForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userId, [FromBody] FileDto fileDto)
+    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GeneratePreSignedUrlForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, [FromBody] FileDto fileDto)
     {
+        if (userId == Guid.Empty)
+        {
+            return BadRequest("User Id not found");
+        }
         (var url, var timeLimit) = await createFileUseCase.TryCreateAsync(fileDto, userId);
         var signedResponse = new SignedUrlResponse
         {

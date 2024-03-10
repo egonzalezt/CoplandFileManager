@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using System.IO;
 using Domain.StorageServiceProvider;
 using Services.Options;
-using CoplandFileManager.Domain.User;
 
 internal class GoogleCloudStorageServiceProvider : IStorageServiceProvider
 {

@@ -1,6 +1,6 @@
 ﻿namespace CoplandFileManager.Infrastructure.EntityFrameworkCore.DbContext.ModelBuilders;
 
-using CoplandFileManager.Domain.File;
+using Domain.File;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 internal static class FileModelBuilder

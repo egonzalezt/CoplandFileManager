@@ -4,7 +4,7 @@ using SharedKernel.Exceptions;
 
 public class FileNotFoundException : BusinessException
 {
-    public FileNotFoundException() : base("Lain not found the user for the selected user")
+    public FileNotFoundException() : base("Lain not found the file for the current user")
     {
     }
 

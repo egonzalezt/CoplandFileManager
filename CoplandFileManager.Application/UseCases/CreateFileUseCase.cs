@@ -17,14 +17,18 @@ public class CreateFileUseCase(
 ) : ICreateFileUseCase
 {
 
-    public async Task TryCreateAsync(Stream stream, FileDto fileDto, string identityProviderUserId)
+    public async Task TryCreateAsync(Stream stream, FileDto fileDto, Guid userId)
     {
         logger.LogInformation("Saving File on the system");
-        Guid userId = await userCommandRepository.GetIdByIdentityProviderId(identityProviderUserId) ?? throw new UserNotFoundException(identityProviderUserId);
+        var userExists = await userCommandRepository.ExistsByIdAsync(userId);
+        if (!userExists)
+        {
+            throw new UserNotFoundException(userId.ToString());
+        }
         bool isActive = await userCommandRepository.IsActive(userId);
         if (!isActive)
         {
-            throw new UserNotActiveException(identityProviderUserId);
+            throw new UserNotActiveException(userId.ToString());
         }
         var objectRoute = File.GenerateObjectRoute(fileDto.NameWithExtension, userId);
         await storageServiceProvider.UploadFileAsync(stream, objectRoute, fileDto.MimeType);
@@ -33,14 +37,13 @@ public class CreateFileUseCase(
         logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
     }
 
-    public async Task<(string url, TimeSpan timeLimit)> TryCreateAsync(FileDto fileDto, string identityProviderUserId)
+    public async Task<(string url, TimeSpan timeLimit)> TryCreateAsync(FileDto fileDto, Guid userId)
     {
         logger.LogInformation("Saving File on the system");
-        Guid userId = await userCommandRepository.GetIdByIdentityProviderId(identityProviderUserId) ?? throw new UserNotFoundException(identityProviderUserId);
-        bool isActive = await userCommandRepository.IsActive(userId);
-        if (!isActive)
+        var userExists = await userCommandRepository.ExistsByIdAsync(userId);
+        if (!userExists)
         {
-            throw new UserNotActiveException(identityProviderUserId);
+            throw new UserNotFoundException(userId.ToString());
         }
         var newFile = File.Build(fileDto.category, fileDto.NameWithExtension, userId);
         await fileQueryRepository.CreateAsync(newFile, userId);

@@ -3,8 +3,6 @@
 public interface IUserCommandRepository
 {
     Task<bool> ExistsByIdAsync(Guid id);
-    Task<bool> ExistsByIdentityProviderIdAsync(string identityProviderUserId);
-    Task<Guid?> GetIdByIdentityProviderId(string identityProviderId);
-    Task<bool> IsActive(Guid userId);
-    Task<bool> IsActive(string identityProviderUserId);
+    Task<User?> GetByIdAsync(Guid id);
+    Task<bool> IsActive(Guid id);
 }

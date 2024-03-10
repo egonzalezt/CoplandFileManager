@@ -1,13 +1,13 @@
 ﻿namespace CoplandFileManager.Infrastructure.EntityFrameworkCore;
 
-using Domain.User.Repository;
 using Commands;
 using DbContext;
 using Queries;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using CoplandFileManager.Domain.File.Repositories;
+using Domain.File.Repositories;
+using Domain.User.Repository;
 
 internal static class ConfigureEntityFramework
 {

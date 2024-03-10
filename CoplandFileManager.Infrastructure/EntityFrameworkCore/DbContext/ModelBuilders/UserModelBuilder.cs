@@ -10,8 +10,6 @@ internal static class UserModelBuilder
     {
         builder.Property(p => p.IsActive)
             .HasDefaultValue(true);
-
-        builder.HasIndex(p => p.IdentityProviderUserId).IsUnique();
         builder.HasIndex(p => p.Id).IsUnique();
     }
 }

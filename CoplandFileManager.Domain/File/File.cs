@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace CoplandFileManager.Domain.File;
+﻿namespace CoplandFileManager.Domain.File;
 
 public class File
 {

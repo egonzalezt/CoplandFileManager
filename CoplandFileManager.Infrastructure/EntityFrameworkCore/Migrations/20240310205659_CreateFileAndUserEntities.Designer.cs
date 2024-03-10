@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CoplandFileManager.Infrastructure.Migrations
 {
     [DbContext(typeof(CoplandFileManagerDbContext))]
-    [Migration("20240306041733_CreateFileAndUserEntities")]
+    [Migration("20240310205659_CreateFileAndUserEntities")]
     partial class CreateFileAndUserEntities
     {
         /// <inheritdoc />
@@ -31,6 +31,9 @@ namespace CoplandFileManager.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Format")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -38,27 +41,41 @@ namespace CoplandFileManager.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("ObjectRoute")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
-
-                    b.Property<string>("ObjectId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.HasIndex("ObjectId")
+                    b.HasIndex("ObjectRoute")
                         .IsUnique();
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Files");
+                });
+
+            modelBuilder.Entity("CoplandFileManager.Domain.File.UserFilePermission", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Permission")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId", "FileId");
+
+                    b.HasIndex("FileId");
+
+                    b.ToTable("UserFilePermissions");
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.User.User", b =>
@@ -67,7 +84,7 @@ namespace CoplandFileManager.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("IdentityProviderUserId")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -81,24 +98,36 @@ namespace CoplandFileManager.Infrastructure.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.HasIndex("IdentityProviderUserId")
-                        .IsUnique();
-
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("CoplandFileManager.Domain.File.UserFilePermission", b =>
+                {
+                    b.HasOne("CoplandFileManager.Domain.File.File", "File")
+                        .WithMany("UserPermissions")
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CoplandFileManager.Domain.User.User", "User")
+                        .WithMany("UserPermissions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("File");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.File.File", b =>
                 {
-                    b.HasOne("CoplandFileManager.Domain.User.User", null)
-                        .WithMany("Files")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("UserPermissions");
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.User.User", b =>
                 {
-                    b.Navigation("Files");
+                    b.Navigation("UserPermissions");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,7 +1,7 @@
 ﻿namespace CoplandFileManager.Infrastructure.EntityFrameworkCore.DbContext;
 
-using CoplandFileManager.Domain.User;
-using CoplandFileManager.Domain.File;
+using Domain.User;
+using Domain.File;
 using Microsoft.EntityFrameworkCore;
 using ModelBuilders;
 

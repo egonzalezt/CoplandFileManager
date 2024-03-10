@@ -14,9 +14,13 @@ public class GetSignedUrlUseCase(
         IUserCommandRepository userCommandRepository
     ) : IGetSignedUrlUseCase
 {
-    public async Task<(string url, TimeSpan timeLimit)> GetSignedUrlUseCaseAsync(string identityProviderUserId, Guid fileId)
+    public async Task<(string url, TimeSpan timeLimit)> GetSignedUrlUseCaseAsync(Guid userId, Guid fileId)
     {
-        Guid userId = await userCommandRepository.GetIdByIdentityProviderId(identityProviderUserId) ?? throw new UserNotFoundException(identityProviderUserId);
+        var userExists = await userCommandRepository.ExistsByIdAsync(userId);
+        if (!userExists)
+        {
+            throw new UserNotFoundException(userId.ToString());
+        }
         var file = await fileCommandRepository.GetFileByIdAndUserIdAsync(fileId, userId) ?? throw new FileNotFoundException(fileId.ToString());
         var fileWithExtension = $"{file.Name}{file.Format}";
         var timeLimit = TimeSpan.FromMinutes(30);

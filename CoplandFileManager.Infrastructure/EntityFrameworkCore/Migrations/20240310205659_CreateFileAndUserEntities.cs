@@ -6,25 +6,38 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CoplandFileManager.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateFilePermissions : Migration
+    public partial class CreateFileAndUserEntities : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_Files_ObjectId",
-                table: "Files");
+            migrationBuilder.CreateTable(
+                name: "Files",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Format = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
+                    ObjectRoute = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Files", x => x.Id);
+                });
 
-            migrationBuilder.DropColumn(
-                name: "ObjectId",
-                table: "Files");
-
-            migrationBuilder.AddColumn<int>(
-                name: "Category",
-                table: "Files",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "UserFilePermissions",
@@ -52,6 +65,12 @@ namespace CoplandFileManager.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Files_Id",
+                table: "Files",
+                column: "Id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Files_ObjectRoute",
                 table: "Files",
                 column: "ObjectRoute",
@@ -61,6 +80,12 @@ namespace CoplandFileManager.Infrastructure.Migrations
                 name: "IX_UserFilePermissions_FileId",
                 table: "UserFilePermissions",
                 column: "FileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Id",
+                table: "Users",
+                column: "Id",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -69,27 +94,11 @@ namespace CoplandFileManager.Infrastructure.Migrations
             migrationBuilder.DropTable(
                 name: "UserFilePermissions");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Files_ObjectRoute",
-                table: "Files");
+            migrationBuilder.DropTable(
+                name: "Files");
 
-            migrationBuilder.DropColumn(
-                name: "Category",
-                table: "Files");
-
-            migrationBuilder.AddColumn<string>(
-                name: "ObjectId",
-                table: "Files",
-                type: "character varying(256)",
-                maxLength: 256,
-                nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Files_ObjectId",
-                table: "Files",
-                column: "ObjectId",
-                unique: true);
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }
