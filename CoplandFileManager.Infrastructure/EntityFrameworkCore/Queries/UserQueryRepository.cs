@@ -14,9 +14,8 @@ public class UserQueryRepository : IUserQueryRepository
         _context = context;
     }
 
-    public async Task CreateAsync(User user)
+    public async Task CreateAsync(User user, CancellationToken cancellationToken)
     {
-        await _context.AddAsync(user);
-        await _context.SaveChangesAsync();
+        await _context.AddAsync(user, cancellationToken);
     }
 }
