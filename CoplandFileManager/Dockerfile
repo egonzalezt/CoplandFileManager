@@ -10,6 +10,10 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["CoplandFileManager/CoplandFileManager.csproj", "CoplandFileManager/"]
+COPY ["CoplandFileManager.Application/CoplandFileManager.Application.csproj", "CoplandFileManager.Application/"]
+COPY ["CoplandFileManager.Domain/CoplandFileManager.Domain.csproj", "CoplandFileManager.Domain/"]
+COPY ["CoplandFileManager.Infrastructure/CoplandFileManager.Infrastructure.csproj", "CoplandFileManager.Infrastructure/"]
+COPY ["CoplandFileManager.Workers/CoplandFileManager.Workers.csproj", "CoplandFileManager.Workers/"]
 RUN dotnet restore "./CoplandFileManager/./CoplandFileManager.csproj"
 COPY . .
 WORKDIR "/src/CoplandFileManager"
