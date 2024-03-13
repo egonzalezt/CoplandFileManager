@@ -11,5 +11,6 @@ public static class ConfigureApplication
         services.AddScoped<ICreateFileUseCase, CreateFileUseCase>();
         services.AddScoped<IGetSignedUrlUseCase, GetSignedUrlUseCase>();
         services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
+        services.AddScoped<IGetFilesUseCase,  GetFilesUseCase>();
     }
 }

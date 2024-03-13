@@ -17,7 +17,7 @@ public class CreateFileUseCase(
 ) : ICreateFileUseCase
 {
 
-    public async Task TryCreateAsync(Stream stream, FileDto fileDto, Guid userId)
+    public async Task TryCreateAsync(Stream stream, FileUploadDto fileDto, Guid userId)
     {
         logger.LogInformation("Saving File on the system");
         var userExists = await userCommandRepository.ExistsByIdAsync(userId);
@@ -37,7 +37,7 @@ public class CreateFileUseCase(
         logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
     }
 
-    public async Task<(string url, TimeSpan timeLimit)> TryCreateAsync(FileDto fileDto, Guid userId)
+    public async Task<(string url, TimeSpan timeLimit)> TryCreateAsync(FileUploadDto fileDto, Guid userId)
     {
         logger.LogInformation("Saving File on the system");
         var userExists = await userCommandRepository.ExistsByIdAsync(userId);

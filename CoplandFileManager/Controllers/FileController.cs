@@ -1,15 +1,18 @@
 ﻿namespace CoplandFileManager.Controllers;
 
 using Application.Interfaces;
+using CoplandFileManager.Domain.File;
+using CoplandFileManager.Domain.File.Dtos;
 using CoplandFileManager.Responses;
 using Domain.File.Dtos;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 [ApiController]
 [Route("[controller]")]
-public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlUseCase getSignedUrlUseCase) : ControllerBase
+public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlUseCase getSignedUrlUseCase, IGetFilesUseCase getFilesUseCase) : ControllerBase
 {
     [HttpPost("upload")]
     public async Task<ActionResult<BaseResponse<FileCreatedResponse>>> UploadFileAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, IFormFile file)
@@ -23,7 +26,7 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
             return BadRequest("File not found");
         }
 
-        var fileDto = new FileDto
+        var fileDto = new FileUploadDto
         {
             NameWithExtension = file.FileName,
             MimeType = file.ContentType.ToLower(),
@@ -62,7 +65,7 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
     }
 
     [HttpPost("upload-file-signed-url")]
-    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GeneratePreSignedUrlForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, [FromBody] FileDto fileDto)
+    public async Task<ActionResult<BaseResponse<SignedUrlResponse>>> GeneratePreSignedUrlForUploadUrlAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, [FromBody] FileUploadDto fileDto)
     {
         if (userId == Guid.Empty)
         {
@@ -76,5 +79,20 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
         };
         var baseResponse = new BaseResponse<SignedUrlResponse> { Content = signedResponse, Message = "Signed Url generated to upload the file" };
         return Ok(baseResponse);
+    }
+
+    [HttpGet("get-files")]
+    public async Task<ActionResult<PaginationResult<FileDto>>> GetFilesAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] Guid userId, [FromQuery] int pageIndex, [FromQuery] int pageSize)
+    {
+        if (userId == Guid.Empty)
+        {
+            return BadRequest("User Id not found");
+        }
+        var result = await getFilesUseCase.GetAsync(userId, pageIndex, pageSize);
+        Response.Headers.Add("X-Pagination-Current-Page", result.CurrentPage.ToString());
+        Response.Headers.Add("X-Pagination-Next-Page", result.NextPage.ToString());
+        Response.Headers.Add("X-Pagination-Has-Next-Page", result.HasNextPage.ToString());
+        Response.Headers.Add("X-Pagination-Total-Pages", result.TotalPages.ToString());
+        return Ok(result.Data);
     }
 }

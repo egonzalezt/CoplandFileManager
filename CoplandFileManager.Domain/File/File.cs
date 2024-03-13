@@ -1,5 +1,7 @@
 ﻿namespace CoplandFileManager.Domain.File;
 
+using System.Text.Json.Serialization;
+
 public class File
 {
     private File(Category category, string name, string format, string objectRoute)
@@ -13,6 +15,7 @@ public class File
     public Guid Id { get; private set; }
     public string Name { get; private set; }
     public string Format { get; private set; }
+    [JsonIgnore]
     public string ObjectRoute { get; private set; }
     public Category Category { get; private set; }
     public DateTime UploadTime { get; } = DateTime.UtcNow;

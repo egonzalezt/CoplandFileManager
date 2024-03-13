@@ -2,7 +2,11 @@
 
 public class FileDto
 {
-    public string NameWithExtension { get; set; }
-    public string MimeType { get; set; }
-    public Category category { get; set; }
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string Format { get; set; }
+    public Category Category { get; set; }
+    public DateTime UploadTime { get; set; }
+    public UserFilePermission UserPermissions { get; set; }
+
 }

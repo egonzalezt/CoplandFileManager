@@ -4,6 +4,7 @@ using DbContext;
 using Domain.File.Repositories;
 using Domain.File;
 using Microsoft.EntityFrameworkCore;
+using CoplandFileManager.Domain.File.Dtos;
 
 public class FileCommandRepository : IFileCommandRepository
 {
@@ -14,15 +15,35 @@ public class FileCommandRepository : IFileCommandRepository
         _context = context;
     }
 
-    public async Task<List<File>> GetFilesByUserIdAsync(Guid userId, int pageIndex, int pageSize)
+
+    public async Task<PaginationResult<FileDto>> GetFilesByUserIdAsync(Guid userId, int pageIndex, int pageSize)
     {
-        return await (from uf in _context.UserFilePermissions
-                      where uf.UserId == userId
-                      join f in _context.Files on uf.FileId equals f.Id
-                      select f)
-                      .Skip(pageIndex * pageSize)
-                      .Take(pageSize)
-                      .ToListAsync();
+        var query = (from uf in _context.UserFilePermissions
+                     where uf.UserId == userId
+                     join f in _context.Files.Include(f => f.UserPermissions) on uf.FileId equals f.Id
+                     select new FileDto
+                     {
+                         Id = f.Id,
+                         Name = f.Name,
+                         Format = f.Format,
+                         Category = f.Category,
+                         UploadTime = f.UploadTime,
+                         UserPermissions = f.UserPermissions.First(up => up.UserId == userId)
+                     });
+
+        var totalItems = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+        var result = await query.Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
+
+        return new PaginationResult<FileDto>
+        {
+            Data = result,
+            CurrentPage = pageIndex,
+            NextPage = pageIndex + 1,
+            TotalPages = totalPages,
+            HasNextPage = (pageIndex + 1) < totalPages
+        };
     }
 
     public async Task<File?> GetFileByNameAsync(string fileName)
