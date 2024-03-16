@@ -45,3 +45,19 @@ jobs:
           file: ./CoplandFileManager/Dockerfile
           push: true
           tags: egonzalezt/coplandfilemanager:latest, egonzalezt/coplandfilemanager:${{ needs.generate-version.outputs.new_tag }}
+      - name: 'Obtain access token by using workload identity federation'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          create_credentials_file: true
+          token_format: access_token
+          workload_identity_provider: projects/${{ secrets.PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-actions/providers/github-actions-oidc
+          service_account: github-actions-workflow@${{ secrets.PROJECT_ID }}.iam.gserviceaccount.com
+      - name: Lock image version in deployment.yaml
+        run: sed -i 's|CLOUD_IMAGE_TAG|${{ needs.generate-version.outputs.new_tag }}|g' ./deployment/deployment.yaml
+      - name: Connect to GKE
+        uses: google-github-actions/get-gke-credentials@v0
+        with:
+          cluster_name: ${{ secrets.CLUSTER }}
+          location: ${{ secrets.CLUSTER_ZONE }}
+      - name: Deploy to GKE
+        run: kubectl apply -f ./deployment/deployment.yaml

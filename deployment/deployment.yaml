@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coplandfilemanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coplandfilemanager
+  template:
+    metadata:
+      labels:
+        app: coplandfilemanager
+    spec:
+      containers:
+      - name: coplandfilemanager
+        image: egonzalezt/coplandfilemanager:CLOUD_IMAGE_TAG
+        ports:
+        - containerPort: 8080
+        env:
+        - name: RabbitMQ__Connection__HostName
+          value: production-rabbitmqcluster
+        - name: RabbitMQ__Connection__VirtualHost
+          value: /
+        - name: RabbitMQ__Connection__UserName
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-credentials
+              key: username
+        - name: RabbitMQ__Connection__Password
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq-credentials
+              key: password
+        - name: ConnectionStrings__PostgresSql
+          valueFrom:
+            secretKeyRef:
+              name: copland-secret
+              key: COPLAND_CONN_STRING        
+        - name: GoogleCloud__Authentication__private_key_id
+          valueFrom:
+            secretKeyRef:
+              name: copland-secret
+              key: GCP_private_key_id  
+        - name: GoogleCloud__Authentication__private_key
+          valueFrom:
+            secretKeyRef:
+              name: copland-secret
+              key: GCP_private_key  
+        - name: GoogleCloud__Authentication__client_id
+          valueFrom:
+            secretKeyRef:
+              name: copland-secret
+              key: GCP_client_id  
+        - name: GoogleCloud__Authentication__client_x509_cert_url
+          valueFrom:
+            secretKeyRef:
+              name: copland-secret
+              key: GCP_client_x509_cert_url
+        - name: RabbitMQ__Queues__Consumer__UserOwnedQueue
+          value: copland_user_owned
+        - name: GoogleCloud__Storage__BucketName
+          value: copland-file-manager
+        - name: GoogleCloud__Authentication__type
+          value: service_account
+        - name: GoogleCloud__Authentication__project_id
+          value: distributed-sys-test
+        - name: GoogleCloud__Authentication__client_email
+          value: copeland-file-manager@distributed-sys-test.iam.gserviceaccount.com
+        - name: GoogleCloud__Authentication__auth_uri
+          value: https://accounts.google.com/o/oauth2/auth
+        - name: GoogleCloud__Authentication__token_uri
+          value: https://oauth2.googleapis.com/token
+        - name: GoogleCloud__Authentication__auth_provider_x509_cert_url
+          value: https://oauth2.googleapis.com/token
+        - name: GoogleCloud__Authentication__universe_domain
+          value: googleapis.com
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "256m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coplandfilemanager
+spec:
+  selector:
+    app: coplandfilemanager
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
