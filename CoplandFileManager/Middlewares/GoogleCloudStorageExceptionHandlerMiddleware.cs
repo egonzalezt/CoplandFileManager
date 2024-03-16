@@ -29,6 +29,10 @@ public class GoogleCloudStorageExceptionHandlerMiddleware
         {
             await HandleGoogleApiExceptionAsync(context, ex);
         }
+        catch (JsonException ex)
+        {
+            await HandleJsonExceptionAsync(context, ex);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception occurred.");
@@ -70,6 +74,14 @@ public class GoogleCloudStorageExceptionHandlerMiddleware
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         context.Response.ContentType = "application/json";
         var result = JsonSerializer.Serialize(new { message = "Lain detect an error while processing the request." });
+        return context.Response.WriteAsync(result);
+    }
+
+    private Task HandleJsonExceptionAsync(HttpContext context, JsonException ex)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+        var result = JsonSerializer.Serialize(new { message = "Invalid JSON in request body." });
         return context.Response.WriteAsync(result);
     }
 }
