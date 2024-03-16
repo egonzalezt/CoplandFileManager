@@ -46,7 +46,7 @@ jobs:
           push: true
           tags: egonzalezt/coplandfilemanager:latest, egonzalezt/coplandfilemanager:${{ needs.generate-version.outputs.new_tag }}
       - name: 'Obtain access token by using workload identity federation'
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v2'
         with:
           create_credentials_file: true
           token_format: access_token
