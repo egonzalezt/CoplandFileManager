@@ -6,7 +6,7 @@ on:
       - develop
 env:
   IMAGE: coplandfilemanager
-  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  PROJECT_ID: ${{ secrets.PROJECT_ID }}
   DEPLOYMENT_NAME: coplandfilemanager
 
 jobs:
@@ -30,8 +30,8 @@ jobs:
           MINOR_STRING_TOKEN: "feat("
           PATCH_STRING_TOKEN: "fix("
           DEFAULT_BUMP: minor
-       #needs.generate-version.outputs.new_tag   
   setup-build-publish-deploy:
+    needs: generate-version
     name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
     steps:
