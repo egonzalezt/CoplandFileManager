@@ -63,12 +63,12 @@ jobs:
           context: .
           file: ./CoplandFileManager/Dockerfile
           push: true
-          tags: egonzalezt/coplandfilemanager:latest, egonzalezt/$IMAGE_NAME:${{ needs.generate-version.outputs.new_tag }}
+          tags: egonzalezt/coplandfilemanager:latest, egonzalezt/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
   
       # Deploy the Docker image to the GKE cluster
       - name: Deploy
         run: |-
-          kubectl set image deployment/$DEPLOYMENT_NAME coplandfilemanager=egonzalezt/$IMAGE_NAME:${{ needs.generate-version.outputs.new_tag }}
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} coplandfilemanager=egonzalezt/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
           kubectl rollout status deployment/coplandfilemanager
       - name: Check deployment success
         run: |
