@@ -46,6 +46,7 @@ jobs:
           push: true
           tags: egonzalezt/coplandfilemanager:latest, egonzalezt/coplandfilemanager:${{ needs.generate-version.outputs.new_tag }}
   deploy-gke:
+    needs: build-and-publish
     runs-on: ubuntu-22.04
     permissions:
       contents: 'read'
@@ -61,7 +62,7 @@ jobs:
     - id: 'set_version'
       run: sed -i 's|CLOUD_IMAGE_TAG|${{ needs.generate-version.outputs.new_tag }}|g' ./deployment/deployment.yaml
     - id: 'connect_gke'
-      uses: google-github-actions/get-gke-credentials@v0
+      uses: google-github-actions/get-gke-credentials@v2
       with:
         cluster_name: ${{ secrets.CLUSTER }}
         location: ${{ secrets.CLUSTER_ZONE }}
