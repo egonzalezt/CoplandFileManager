@@ -8,7 +8,7 @@ env:
   IMAGE: coplandfilemanager
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   DEPLOYMENT_NAME: coplandfilemanager
-
+  IMAGE_NAME: coplandfilemanager
 jobs:
   generate-version:
     runs-on: ubuntu-22.04
@@ -63,18 +63,14 @@ jobs:
           context: .
           file: ./CoplandFileManager/Dockerfile
           push: true
-          tags: egonzalezt/coplandfilemanager:latest, egonzalezt/coplandfilemanager:${{ needs.generate-version.outputs.new_tag }}
-
-      # Set up kustomize
-      - name: Set up Kustomize
-        run: |-
-          curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64
-          chmod u+x ./kustomize
+          tags: egonzalezt/coplandfilemanager:latest, egonzalezt/$IMAGE_NAME:${{ needs.generate-version.outputs.new_tag }}
   
       # Deploy the Docker image to the GKE cluster
       - name: Deploy
         run: |-
-          ./kustomize edit set image egonzalezt/coplandfilemanager:TAG=egonzalezt/coplandfilemanager:${{ needs.generate-version.outputs.new_tag }}
-          ./kustomize build . | kubectl apply -f -
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
-          kubectl get services -o wide
+          kubectl set image deployment/$DEPLOYMENT_NAME coplandfilemanager=egonzalezt/$IMAGE_NAME:${{ needs.generate-version.outputs.new_tag }}
+          kubectl rollout status deployment/coplandfilemanager
+      - name: Check deployment success
+        run: |
+          while [[ $(kubectl get deployment/coplandfilemanager -o 'jsonpath={..status.conditions[?(@.type=="Available")].status}') != "True" ]]; do sleep 5; done
+          while [[ $(kubectl get pods -l app=coplandfilemanager -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do sleep 5; done
