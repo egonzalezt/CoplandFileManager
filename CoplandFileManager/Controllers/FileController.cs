@@ -7,8 +7,6 @@ using CoplandFileManager.Domain.User.Dtos;
 using CoplandFileManager.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 [ApiController]
@@ -27,7 +25,7 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
             return BadRequest("User Id not found");
         }
 
-        var userInfo = GetUserInfoAuthFromHeader(userInfoHeader);
+        var userInfo = UserInfoAuthDto.DecodeUserInfoAuth(userInfoHeader);
         if (userInfo == null || userInfo.UserId == Guid.Empty)
         {
             return BadRequest("Invalid user info");
@@ -62,7 +60,7 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
             return BadRequest("User Id not found");
         }
 
-        var userInfo = GetUserInfoAuthFromHeader(userInfoHeader);
+        var userInfo = UserInfoAuthDto.DecodeUserInfoAuth(userInfoHeader);
         if (userInfo == null || userInfo.UserId == Guid.Empty)
         {
             return BadRequest("Invalid user info");
@@ -87,7 +85,7 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
             return BadRequest("User Id not found");
         }
         logger.LogInformation(userInfoHeader);
-        var userInfo = GetUserInfoAuthFromHeader(userInfoHeader);
+        var userInfo = UserInfoAuthDto.DecodeUserInfoAuth(userInfoHeader);
         if (userInfo == null || userInfo.UserId == Guid.Empty)
         {
             return BadRequest("Invalid user info");
@@ -111,7 +109,7 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
             return BadRequest("User Id not found");
         }
 
-        var userInfo = GetUserInfoAuthFromHeader(userInfoHeader);
+        var userInfo = UserInfoAuthDto.DecodeUserInfoAuth(userInfoHeader);
         if (userInfo == null || userInfo.UserId == Guid.Empty)
         {
             return BadRequest("Invalid user info");
@@ -123,13 +121,5 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
         Response.Headers.Add("X-Pagination-Has-Next-Page", result.HasNextPage.ToString());
         Response.Headers.Add("X-Pagination-Total-Pages", result.TotalPages.ToString());
         return Ok(result.Data);
-    }
-
-    private UserInfoAuthDto? GetUserInfoAuthFromHeader(string header)
-    {
-        var decodedBytes = Convert.FromBase64String(header);
-        var decodedString = Encoding.UTF8.GetString(decodedBytes);
-        var userInfo = JsonSerializer.Deserialize<UserInfoAuthDto>(decodedString);
-        return userInfo;
     }
 }
