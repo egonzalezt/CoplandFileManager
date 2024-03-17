@@ -21,12 +21,11 @@ public class File
     public DateTime UploadTime { get; } = DateTime.UtcNow;
     public ICollection<UserFilePermission> UserPermissions { get; private set; }
 
-    public static File Build(Category category, string nameWithExtension, Guid userId)
+    public static File Build(Category category, string name, string nameWithExtension, Guid userId)
     {
-        var nameWithoutExtension = Path.GetFileNameWithoutExtension(nameWithExtension); 
         var extension = Path.GetExtension(nameWithExtension);
         var objectRoute = $"{userId}/{nameWithExtension}";
-        return new(category, nameWithoutExtension, extension, objectRoute);
+        return new(category, name, extension, objectRoute);
     }
 
     public static string GenerateObjectRoute(string nameWithExtension,  Guid userId)

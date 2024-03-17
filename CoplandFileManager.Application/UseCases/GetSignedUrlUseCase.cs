@@ -22,9 +22,8 @@ public class GetSignedUrlUseCase(
             throw new UserNotFoundException(userId.ToString());
         }
         var file = await fileCommandRepository.GetFileByIdAndUserIdAsync(fileId, userId) ?? throw new FileNotFoundException(fileId.ToString());
-        var fileWithExtension = $"{file.Name}{file.Format}";
         var timeLimit = TimeSpan.FromMinutes(30);
-        var url = await storageServiceProvider.GeneratePreSignedUrlAsync(fileWithExtension, userId, timeLimit);
+        var url = await storageServiceProvider.GeneratePreSignedUrlAsync(file.ObjectRoute, userId, timeLimit);
         return (url, timeLimit);
     }
 }

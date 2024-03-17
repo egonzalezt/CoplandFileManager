@@ -1,6 +1,8 @@
 ﻿namespace CoplandFileManager.Middlewares;
 
+using CoplandFileManager.Domain.File.Exceptions;
 using CoplandFileManager.Domain.SharedKernel.Exceptions;
+using CoplandFileManager.Domain.User.Exceptions;
 using System.Net;
 using System.Text.Json;
 
@@ -20,6 +22,10 @@ public class GoogleCloudStorageExceptionHandlerMiddleware
         try
         {
             await _next(context);
+        }
+        catch (BusinessException ex) when (ex is UserNotFoundException or FileNotFoundException)
+        {
+            await HandleNotFoundExceptionAsync(context, ex);
         }
         catch (BusinessException ex)
         {
@@ -42,14 +48,24 @@ public class GoogleCloudStorageExceptionHandlerMiddleware
 
     private Task HandleBusinessExceptionAsync(HttpContext context, BusinessException ex)
     {
-        context.Response.ContentType = "application/json";
-
+        context.Response.ContentType = "application/json";      
         var statusCode = (int)HttpStatusCode.InternalServerError;
         string errorMessage = ex.Message;
         context.Response.StatusCode = statusCode;
         var result = JsonSerializer.Serialize(new { message = errorMessage });
         return context.Response.WriteAsync(result);
     }
+
+    private Task HandleNotFoundExceptionAsync(HttpContext context, BusinessException ex)
+    {
+        context.Response.ContentType = "application/json";
+        var statusCode = (int)HttpStatusCode.NotFound;
+        string errorMessage = ex.Message;
+        context.Response.StatusCode = statusCode;
+        var result = JsonSerializer.Serialize(new { message = errorMessage });
+        return context.Response.WriteAsync(result);
+    }
+
 
     private Task HandleGoogleApiExceptionAsync(HttpContext context, Google.GoogleApiException ex)
     {

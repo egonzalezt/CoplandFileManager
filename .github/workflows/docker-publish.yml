@@ -5,10 +5,10 @@ on:
     branches:
       - develop
 env:
-  IMAGE: coplandfilemanager
   PROJECT_ID: ${{ secrets.PROJECT_ID }}
   DEPLOYMENT_NAME: coplandfilemanager
   IMAGE_NAME: coplandfilemanager
+  DOCKERFILE_LOCATION: CoplandFileManager
 jobs:
   generate-version:
     runs-on: ubuntu-22.04
@@ -57,20 +57,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN  }}
-      - name: Build Coplan File Manager and publish to Docker Hub
+      - name: Build ${{ env.IMAGE_NAME }} and publish to Docker Hub
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./CoplandFileManager/Dockerfile
+          file: ./${{ env.DOCKERFILE_LOCATION }}/Dockerfile
           push: true
-          tags: egonzalezt/coplandfilemanager:latest, egonzalezt/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
+          tags: egonzalezt/${{ env.IMAGE_NAME }}:latest, egonzalezt/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
   
       # Deploy the Docker image to the GKE cluster
       - name: Deploy
         run: |-
-          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} coplandfilemanager=egonzalezt/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
-          kubectl rollout status deployment/coplandfilemanager
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.DEPLOYMENT_NAME }}=egonzalezt/${{ env.IMAGE_NAME }}:${{ needs.generate-version.outputs.new_tag }}
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
       - name: Check deployment success
         run: |
-          while [[ $(kubectl get deployment/coplandfilemanager -o 'jsonpath={..status.conditions[?(@.type=="Available")].status}') != "True" ]]; do sleep 5; done
-          while [[ $(kubectl get pods -l app=coplandfilemanager -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do sleep 5; done
+          while [[ $(kubectl get deployment/${{ env.DEPLOYMENT_NAME }} -o 'jsonpath={..status.conditions[?(@.type=="Available")].status}') != "True" ]]; do sleep 5; done
+          while [[ $(kubectl get pods -l app=${{ env.DEPLOYMENT_NAME }} -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do sleep 5; done

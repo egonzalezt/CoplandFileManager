@@ -32,7 +32,7 @@ public class CreateFileUseCase(
         }
         var objectRoute = File.GenerateObjectRoute(fileDto.NameWithExtension, userId);
         await storageServiceProvider.UploadFileAsync(stream, objectRoute, fileDto.MimeType);
-        var newFile = File.Build(fileDto.category, fileDto.NameWithExtension, userId);
+        var newFile = File.Build(fileDto.category, fileDto.Name, fileDto.NameWithExtension, userId);
         await fileQueryRepository.CreateAsync(newFile, userId);
         logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
     }
@@ -45,7 +45,7 @@ public class CreateFileUseCase(
         {
             throw new UserNotFoundException(userId.ToString());
         }
-        var newFile = File.Build(fileDto.category, fileDto.NameWithExtension, userId);
+        var newFile = File.Build(fileDto.category, fileDto.Name, fileDto.NameWithExtension, userId);
         await fileQueryRepository.CreateAsync(newFile, userId);
         var timeLimit = TimeSpan.FromMinutes(15);
         var url = await storageServiceProvider.GeneratePreSignedUrlForUploadAsync(fileDto.NameWithExtension, userId, timeLimit);

@@ -39,13 +39,12 @@ internal class GoogleCloudStorageServiceProvider : IStorageServiceProvider
         return result.Id;
     }
 
-    public async Task<string> GeneratePreSignedUrlAsync(string fileName, Guid userId, TimeSpan expiration)
+    public async Task<string> GeneratePreSignedUrlAsync(string objectRoute, Guid userId, TimeSpan expiration)
     {
-        _logger.LogInformation("Generating pre-signed URL for object: {id}", fileName);
-        var objectRoute = $"{userId}/{fileName}";
+        _logger.LogInformation("Generating pre-signed URL");
         UrlSigner urlSigner = UrlSigner.FromCredential(_googleCredential);
         string url = await urlSigner.SignAsync(_googleCloudStorageOptions.BucketName, objectRoute, expiration);
-        _logger.LogInformation("Pre-signed URL generated successfully for object: {id}", fileName);
+        _logger.LogInformation("Pre-signed URL generated successfully for object");
         return url;
     }
 
