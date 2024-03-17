@@ -28,8 +28,6 @@ app.UseCors(builder =>
            .WithExposedHeaders("X-Pagination-Total-Pages");
 });
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.UseMiddleware<GoogleCloudStorageExceptionHandlerMiddleware>();
