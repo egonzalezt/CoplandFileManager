@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 
 public class CreateFileUseCase(
         IUserCommandRepository userCommandRepository,
+        IFileCommandRepository fileCommandRepository,
         IFileQueryRepository fileQueryRepository,
         ILogger<CreateFileUseCase> logger,
         IStorageServiceProvider storageServiceProvider
@@ -31,10 +32,14 @@ public class CreateFileUseCase(
             throw new UserNotActiveException(userId.ToString());
         }
         var objectRoute = File.GenerateObjectRoute(fileDto.NameWithExtension, userId);
+        var fileExists = await fileCommandRepository.FileExistsByObjectRouteAsync(userId, objectRoute);
+        if (!fileExists)
+        {
+            var newFile = File.Build(fileDto.category, fileDto.Name, fileDto.NameWithExtension, userId);
+            await fileQueryRepository.CreateAsync(newFile, userId);
+            logger.LogInformation("File with Id {id} will be saved on the system once the process is completed", newFile.Id);
+        }
         await storageServiceProvider.UploadFileAsync(stream, objectRoute, fileDto.MimeType);
-        var newFile = File.Build(fileDto.category, fileDto.Name, fileDto.NameWithExtension, userId);
-        await fileQueryRepository.CreateAsync(newFile, userId);
-        logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
     }
 
     public async Task<(string url, TimeSpan timeLimit)> TryCreateAsync(FileUploadDto fileDto, Guid userId)
@@ -45,11 +50,17 @@ public class CreateFileUseCase(
         {
             throw new UserNotFoundException(userId.ToString());
         }
-        var newFile = File.Build(fileDto.category, fileDto.Name, fileDto.NameWithExtension, userId);
-        await fileQueryRepository.CreateAsync(newFile, userId);
+        var objectRoute = File.GenerateObjectRoute(fileDto.NameWithExtension, userId);
+        var fileExists = await fileCommandRepository.FileExistsByObjectRouteAsync(userId, objectRoute);
+        if (!fileExists)
+        {
+            var newFile = File.Build(fileDto.category, fileDto.Name, fileDto.NameWithExtension, userId);
+            await fileQueryRepository.CreateAsync(newFile, userId);
+            logger.LogInformation("File with Id {id} will be saved on the system once the process is completed", newFile.Id);
+        }
+
         var timeLimit = TimeSpan.FromMinutes(15);
         var url = await storageServiceProvider.GeneratePreSignedUrlForUploadAsync(fileDto.NameWithExtension, userId, timeLimit);
-        logger.LogInformation("File with Id {id} successfully saved on the system", newFile.Id);
         return (url, timeLimit);
     }
 }

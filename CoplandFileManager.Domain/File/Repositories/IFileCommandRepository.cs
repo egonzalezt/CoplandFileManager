@@ -8,4 +8,5 @@ public interface IFileCommandRepository
     Task<File?> GetFileByNameAsync(string fileName);
     Task<bool> FileExistsByNameAsync(Guid userId, string fileName);
     Task<File?> GetFileByIdAndUserIdAsync(Guid fileId, Guid userId);
+    Task<bool> FileExistsByObjectRouteAsync(Guid userId, string objectRoute);
 }

@@ -65,4 +65,11 @@ public class FileCommandRepository : IFileCommandRepository
                         f.UserPermissions.Any(p => p.UserId == userId ))
             .FirstOrDefaultAsync();
     }
+
+    public async Task<bool> FileExistsByObjectRouteAsync(Guid userId, string objectRoute)
+    {
+        return await _context.Files.AnyAsync(f =>
+            f.UserPermissions.Any(up => up.UserId == userId) &&
+            f.ObjectRoute == objectRoute);
+    }
 }
