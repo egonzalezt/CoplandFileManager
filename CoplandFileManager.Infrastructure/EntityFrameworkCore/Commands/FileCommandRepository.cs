@@ -15,7 +15,6 @@ public class FileCommandRepository : IFileCommandRepository
         _context = context;
     }
 
-
     public async Task<PaginationResult<FileDto>> GetFilesByUserIdAsync(Guid userId, int pageIndex, int pageSize)
     {
         var query = (from uf in _context.UserFilePermissions
@@ -64,5 +63,12 @@ public class FileCommandRepository : IFileCommandRepository
             .Where(f => f.Id == fileId &&
                         f.UserPermissions.Any(p => p.UserId == userId ))
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> FileExistsByObjectRouteAsync(Guid userId, string objectRoute)
+    {
+        return await _context.Files.AnyAsync(f =>
+            f.UserPermissions.Any(up => up.UserId == userId) &&
+            f.ObjectRoute == objectRoute);
     }
 }
