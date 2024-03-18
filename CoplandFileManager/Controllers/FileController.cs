@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 [ApiController]
 [Route("[controller]")]
-public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlUseCase getSignedUrlUseCase, IGetFilesUseCase getFilesUseCase, ILogger<FileController> logger) : ControllerBase
+public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlUseCase getSignedUrlUseCase, IGetFilesUseCase getFilesUseCase) : ControllerBase
 {
     [HttpPost("upload")]
     public async Task<ActionResult<BaseResponse<FileCreatedResponse>>> UploadFileAsync([FromHeader(Name = "X-Apigateway-Api-Userinfo")] string userInfoHeader, IFormFile file)
@@ -84,7 +84,6 @@ public class FileController(ICreateFileUseCase createFileUseCase, IGetSignedUrlU
         {
             return BadRequest("User Id not found");
         }
-        logger.LogInformation(userInfoHeader);
         var userInfo = UserInfoAuthDto.DecodeUserInfoAuth(userInfoHeader);
         if (userInfo == null || userInfo.UserId == Guid.Empty)
         {
