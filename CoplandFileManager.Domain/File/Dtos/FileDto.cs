@@ -1,5 +1,7 @@
 ﻿namespace CoplandFileManager.Domain.File.Dtos;
 
+using System.Text.Json.Serialization;
+
 public class FileDto
 {
     public Guid Id { get; set; }
@@ -8,5 +10,6 @@ public class FileDto
     public Category Category { get; set; }
     public DateTime UploadTime { get; set; }
     public UserFilePermission UserPermissions { get; set; }
-
+    [JsonIgnore]
+    public string ObjectRoute { get; set; }
 }

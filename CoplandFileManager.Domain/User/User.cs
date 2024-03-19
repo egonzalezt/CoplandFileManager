@@ -20,6 +20,11 @@ public class User
         IsActive = true;
     }
 
+    public void UnActiveUser()
+    {
+        IsActive = false;
+    }
+
     public static User CreateUser(Guid id, string email)
     {
         var user = new User(id, email);
