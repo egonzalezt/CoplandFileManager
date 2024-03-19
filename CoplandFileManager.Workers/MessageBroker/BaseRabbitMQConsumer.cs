@@ -54,7 +54,6 @@ public abstract class BaseRabbitMQWorker : BackgroundService
         _logger.LogInformation("Subscribed to the queue {queue}", _queueName);
         _consumer.Received += async (sender, eventArgs) =>
         {
-
             try
             {
                 _logger.LogInformation("New message received");
@@ -68,35 +67,16 @@ public abstract class BaseRabbitMQWorker : BackgroundService
             }
             catch (InvalidBodyException ex)
             {
-                var headers = new Dictionary<string, object>
-                {
-                    { "ProcessFailed", true }
-                };
-                var properties = _channel.CreateBasicProperties();
-                properties.Headers = headers;
-
                 _logger.LogError(ex, "Invalid Body");
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             }
             catch (InvalidEventTypeException ex)
             {
-                var headers = new Dictionary<string, object>
-                {
-                    { "ProcessFailed", true }
-                };
-                var properties = _channel.CreateBasicProperties();
-                properties.Headers = headers;
                 _logger.LogError(ex, "Invalid EventType");
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             }
             catch (HeaderNotFoundException ex)
             {
-                var headers = new Dictionary<string, object>
-                {
-                    { "ProcessFailed", true }
-                };
-                var properties = _channel.CreateBasicProperties();
-                properties.Headers = headers;
                 _logger.LogError(ex, "Invalid EventType");
                 _channel.BasicAck(eventArgs.DeliveryTag, false);
             }

@@ -1,6 +1,7 @@
 using CoplandFileManager.Extensions;
 using CoplandFileManager.Infrastructure.EntityFrameworkCore.DbContext;
 using CoplandFileManager.Middlewares;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<CoplandFileManagerDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     dbContext.Database.EnsureCreated();
+    await dbContext.Database.MigrateAsync();
     logger.LogInformation("Database created successfully or already exists.");
 }
 

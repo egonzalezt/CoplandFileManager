@@ -26,4 +26,10 @@ public class GetSignedUrlUseCase(
         var url = await storageServiceProvider.GeneratePreSignedUrlAsync(file.ObjectRoute, userId, timeLimit);
         return (url, timeLimit);
     }
+
+    public async Task<(string url, TimeSpan timeLimit)> GetSignedUrlForTransferAsync(Guid userId, string objectRoute, TimeSpan timeLimit)
+    {
+        var url = await storageServiceProvider.GeneratePreSignedUrlAsync(objectRoute, userId, timeLimit);
+        return (url, timeLimit);
+    }
 }

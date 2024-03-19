@@ -18,4 +18,9 @@ public class UserQueryRepository : IUserQueryRepository
     {
         await _context.AddAsync(user, cancellationToken);
     }
+
+    public void Update(User user)
+    {
+        _context.Update(user);
+    }
 }
