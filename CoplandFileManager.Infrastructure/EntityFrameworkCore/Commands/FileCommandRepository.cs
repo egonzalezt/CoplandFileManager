@@ -45,6 +45,37 @@ public class FileCommandRepository : IFileCommandRepository
         };
     }
 
+    public async Task<PaginationResult<FileDto>> GetTransferFilesByUserIdAsync(Guid userId, int pageIndex, int pageSize)
+    {
+        var query = (from uf in _context.UserFilePermissions
+                     where uf.UserId == userId
+                     join f in _context.Files.Include(f => f.UserPermissions) on uf.FileId equals f.Id
+                     select new FileDto
+                     {
+                         Id = f.Id,
+                         Name = f.Name,
+                         Format = f.Format,
+                         Category = f.Category,
+                         UploadTime = f.UploadTime,
+                         ObjectRoute = f.ObjectRoute,
+                         UserPermissions = f.UserPermissions.First(up => up.UserId == userId && up.Permission == Permission.Owner)
+                     });
+
+        var totalItems = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+        var result = await query.Skip(pageIndex * pageSize).Take(pageSize).ToListAsync();
+
+        return new PaginationResult<FileDto>
+        {
+            Data = result,
+            CurrentPage = pageIndex,
+            NextPage = pageIndex + 1,
+            TotalPages = totalPages,
+            HasNextPage = (pageIndex + 1) < totalPages
+        };
+    }
+
     public async Task<File?> GetFileByNameAsync(string fileName)
     {
         return await _context.Files.FirstOrDefaultAsync(f => f.Name == fileName);

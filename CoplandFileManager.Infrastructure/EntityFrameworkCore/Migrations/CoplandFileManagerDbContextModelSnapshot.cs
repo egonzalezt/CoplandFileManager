@@ -54,7 +54,7 @@ namespace CoplandFileManager.Infrastructure.Migrations
                     b.HasIndex("ObjectRoute")
                         .IsUnique();
 
-                    b.ToTable("Files");
+                    b.ToTable("Files", (string)null);
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.File.UserFilePermission", b =>
@@ -72,7 +72,7 @@ namespace CoplandFileManager.Infrastructure.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.ToTable("UserFilePermissions");
+                    b.ToTable("UserFilePermissions", (string)null);
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.User.User", b =>
@@ -95,7 +95,7 @@ namespace CoplandFileManager.Infrastructure.Migrations
                     b.HasIndex("Id")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("CoplandFileManager.Domain.File.UserFilePermission", b =>
